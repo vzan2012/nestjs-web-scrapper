@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ScrappingService } from './scrapping.service';
 import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
@@ -17,7 +17,30 @@ export class ScrappingController {
     description: 'Retrives Scrapping Data',
   })
   @Get(':url')
-  getScrapData(@Param('url') url: string) {
+  getScrapeData(@Param('url') url: string) {
     return this.scrappingService.scrapePageBasicData(url);
+  }
+
+  @ApiOperation({ summary: 'Downloads the Page Screenshot' })
+  @ApiResponse({
+    status: 200,
+    description: 'Downloads the Page Screenshot',
+  })
+  @Get('/screenshot/:url')
+  async getScreenshotPage(@Res() res, @Param('url') url: string) {
+    try {
+      const { fileName: imageFileName, imageDataUrl } =
+        await this.scrappingService.getScreenshotPageByUrl(url);
+
+      res.set({
+        'Content-Disposition': `attachment;filename="${imageFileName}.png"`,
+        'Content-Type': 'image/png',
+      });
+
+      res.send(imageDataUrl);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 }
