@@ -36,11 +36,15 @@ export class PuppeteerService {
     }
   };
 
-  getScreenshotPageForDownload = async (page: puppeteer.Page) => {
+  getScreenshotPageForDownload = async (
+    page: puppeteer.Page,
+    options?: puppeteer.ScreenshotOptions,
+  ) => {
     try {
-      const screenshotImageData = await page.screenshot({ encoding: 'base64' });
-      const imageDataUrl = `data:image/png;base64,${screenshotImageData}`;
-      return imageDataUrl;
+      const screenshotImageData: Buffer | string = await page.screenshot(
+        options,
+      );
+      return screenshotImageData;
     } catch (error) {
       console.error(error);
       throw error;

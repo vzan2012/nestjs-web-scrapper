@@ -22,10 +22,12 @@ export class ScrappingService {
         height: 1024,
       });
 
-      const pageTitle = await page.$eval(
+      const pageTitle = (await this.puppeteerService.checkElementExists(
+        page,
         'title',
-        (element) => element.innerText,
-      );
+      ))
+        ? await page.$eval('title', (element) => element.innerText)
+        : '-';
 
       const pageLinks = await page.$$eval('a', (elements) =>
         elements.map((element) => ({
@@ -85,9 +87,10 @@ export class ScrappingService {
       await this.puppeteerService.navigatePage(page, url);
 
       const imageDataUrl =
-        await this.puppeteerService.getScreenshotPageForDownload(page);
-
-      console.log(imageDataUrl);
+        await this.puppeteerService.getScreenshotPageForDownload(page, {
+          encoding: 'binary',
+          fullPage: true,
+        });
 
       await this.puppeteerService.closeBrowser();
 
