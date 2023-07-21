@@ -43,4 +43,15 @@ export class ScrappingController {
       throw error;
     }
   }
+
+  @ApiOperation({ summary: 'Get Scrapping All Pages Data By Url' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Retrives Scrapping Data of all pages from the site - first level links',
+  })
+  @Get('/pages/:url')
+  getScrapePagesData(@Param('url') url: string) {
+    return this.scrappingService.scrapePagesData(url);
+  }
 }

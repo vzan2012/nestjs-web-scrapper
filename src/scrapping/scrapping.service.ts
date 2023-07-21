@@ -100,4 +100,65 @@ export class ScrappingService {
       throw error;
     }
   };
+
+  scrapePagesData = async (url: string) => {
+    try {
+      const browser = await this.puppeteerService.launchBrowser();
+      const page = await this.puppeteerService.getNewPage(browser);
+
+      // Navigate Page
+      await this.puppeteerService.navigatePage(page, url);
+
+      // Set the Viewport
+      await this.puppeteerService.setPageViewport(page, {
+        width: 1080,
+        height: 1024,
+      });
+
+      const pageTitle = (await this.puppeteerService.checkElementExists(
+        page,
+        'title',
+      ))
+        ? await page.$eval('title', (element) => element.innerText)
+        : '-';
+
+      const allPageLinks = await page.$$eval('a', (elements) =>
+        elements.map((element) => element),
+      );
+
+      const innerPageLinks = await page.$$eval('a', (elements) =>
+        elements
+          .filter(
+            (element) =>
+              element.innerText !== '' &&
+              element.target !== '_blank' &&
+              !element.href.includes('mailto:'),
+          )
+          .map((element) => ({
+            target: element.target,
+            href: element.href,
+            innerText: element.innerText,
+            contents: '-',
+          })),
+      );
+
+      await this.puppeteerService.closeBrowser();
+
+      return {
+        pageTitle,
+        links: {
+          totalNumberOfLinks: {
+            count: allPageLinks.length,
+          },
+          innerPageLinks: {
+            count: innerPageLinks.length,
+            pages: innerPageLinks,
+          },
+        },
+      };
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  };
 }
