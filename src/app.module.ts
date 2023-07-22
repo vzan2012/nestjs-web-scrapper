@@ -6,6 +6,13 @@ import { HealthModule } from './health/health.module';
 import { PuppeteerModule } from './puppeteer/puppeteer.module';
 import { ScrappingModule } from './scrapping/scrapping.module';
 
+/**
+ * App Module
+ *
+ * @export
+ * @class AppModule
+ * @typedef {AppModule}
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({

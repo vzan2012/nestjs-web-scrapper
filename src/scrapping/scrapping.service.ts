@@ -2,10 +2,25 @@ import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
 
+/**
+ * Scrapping Service
+ *
+ * @export
+ * @class ScrappingService
+ * @typedef {ScrappingService}
+ */
 @Injectable()
 export class ScrappingService {
   constructor(private puppeteerService: PuppeteerService) {}
 
+  /**
+   * Return the Page Basic Data By Given URL
+   *
+   * @async
+   * @param {string} url
+   * @returns {Promise<{pageTitle: string;pageDescription: string;pageLinks: {elements: {id: string;class: string;innerText: string;url: string;}[];};inputTypes: {length: number;elements: {...;}[];};
+}>}
+   */
   scrapePageBasicData = async (url: string) => {
     try {
       const browser = await this.puppeteerService.launchBrowser();
@@ -77,6 +92,13 @@ export class ScrappingService {
     }
   };
 
+  /**
+   * Returns the fileName and imagedata of the given webpage URL
+   *
+   * @async
+   * @param {string} url
+   * @returns {Promise<{fileName: string;imageDataUrl: string | Buffer;}>}
+   */
   getScreenshotPageByUrl = async (url: string) => {
     try {
       const browser = await this.puppeteerService.launchBrowser();
@@ -101,6 +123,13 @@ export class ScrappingService {
     }
   };
 
+  /**
+   * Returns the Scrape Page Data by Given URL
+   *
+   * @async
+   * @param {string} url
+   * @returns {Promise<any>}
+   */
   scrapePagesData = async (url: string) => {
     try {
       const browser = await this.puppeteerService.launchBrowser();

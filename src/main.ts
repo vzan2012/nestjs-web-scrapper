@@ -2,6 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+/**
+ * Bootstrap function
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 async function bootstrap() {
   const APP_TITLE = 'Web Scrapper API';
   const app = await NestFactory.create(AppModule, {
