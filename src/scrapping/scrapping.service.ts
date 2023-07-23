@@ -12,7 +12,7 @@ import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
 export class ScrappingService {
   constructor(private puppeteerService: PuppeteerService) {}
 
-  generateId = this.puppeteerService.generateUniqueIdV3();
+  generateId = this.puppeteerService.generateUniqueIdV4();
   /**
    * Return the Page Basic Data By Given URL
    *

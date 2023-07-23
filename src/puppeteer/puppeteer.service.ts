@@ -115,7 +115,7 @@ export class PuppeteerService {
    *
    * @returns {string}
    */
-  generateUniqueIdV3 = () => uuidv4();
+  generateUniqueIdV4 = () => uuidv4();
 
   /**
    * Close the Browser
