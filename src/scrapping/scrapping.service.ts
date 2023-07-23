@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
 import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
 
 /**
@@ -13,6 +12,7 @@ import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
 export class ScrappingService {
   constructor(private puppeteerService: PuppeteerService) {}
 
+  generateId = this.puppeteerService.generateUniqueIdV3();
   /**
    * Return the Page Basic Data By Given URL
    *
@@ -44,23 +44,31 @@ export class ScrappingService {
         ? await page.$eval('title', (element) => element.innerText)
         : '-';
 
-      const pageLinks = await page.$$eval('a', (elements) =>
-        elements.map((element) => ({
-          id: element.getAttribute('id'),
-          class: element.getAttribute('class'),
-          innerText: element.innerText,
-          url: element.getAttribute('href'),
-        })),
+      const pageLinks = await page.$$eval(
+        'a',
+        (elements, generateId) =>
+          elements.map((element) => ({
+            uuid: generateId,
+            id: element.getAttribute('id'),
+            class: element.getAttribute('class'),
+            innerText: element.innerText,
+            url: element.getAttribute('href'),
+          })),
+        this.generateId,
       );
 
-      const inputTypes = await page.$$eval('input', (elements) =>
-        elements.map((element) => ({
-          id: element.getAttribute('id'),
-          class: element.getAttribute('class'),
-          type: element.getAttribute('type'),
-          innerText: element.innerText,
-          value: element.value,
-        })),
+      const inputTypes = await page.$$eval(
+        'input',
+        (elements, generateId) =>
+          elements.map((element) => ({
+            uuid: generateId,
+            id: element.getAttribute('id'),
+            class: element.getAttribute('class'),
+            type: element.getAttribute('type'),
+            innerText: element.innerText,
+            value: element.value,
+          })),
+        this.generateId,
       );
       pageDescription = (await this.puppeteerService.checkElementExists(
         page,
@@ -155,20 +163,24 @@ export class ScrappingService {
         elements.map((element) => element),
       );
 
-      const innerPageLinks = await page.$$eval('a', (elements) =>
-        elements
-          .filter(
-            (element) =>
-              element.innerText !== '' &&
-              element.target !== '_blank' &&
-              !element.href.includes('mailto:'),
-          )
-          .map((element) => ({
-            target: element.target,
-            href: element.href,
-            innerText: element.innerText,
-            contents: '-',
-          })),
+      const innerPageLinks = await page.$$eval(
+        'a',
+        (elements, generateId) =>
+          elements
+            .filter(
+              (element) =>
+                element.innerText !== '' &&
+                element.target !== '_blank' &&
+                !element.href.includes('mailto:'),
+            )
+            .map((element) => ({
+              uuid: generateId,
+              target: element.target,
+              href: element.href,
+              innerText: element.innerText,
+              contents: '-',
+            })),
+        this.generateId,
       );
 
       await this.puppeteerService.closeBrowser();

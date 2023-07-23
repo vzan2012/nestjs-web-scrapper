@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
+import { v4 as uuidv4 } from 'uuid';
 import { Dimensions } from './model';
 
 /**
@@ -108,6 +109,13 @@ export class PuppeteerService {
       throw error;
     }
   };
+
+  /**
+   * Generate Unique Id of Version 3 - Refer UUID npm package library
+   *
+   * @returns {string}
+   */
+  generateUniqueIdV3 = () => uuidv4();
 
   /**
    * Close the Browser
