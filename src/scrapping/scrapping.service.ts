@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as Puppeteer from 'puppeteer';
 import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
 
 /**
@@ -131,6 +132,30 @@ export class ScrappingService {
     }
   };
 
+  scrapeSinglePage = async (page: Puppeteer.Page, url: string) => {
+    try {
+      // Navigate Page
+      await this.puppeteerService.navigatePage(page, url);
+
+      // Set the Viewport
+      await this.puppeteerService.setPageViewport(page, {
+        width: 1080,
+        height: 1024,
+      });
+
+      const pageTitle = (await this.puppeteerService.checkElementExists(
+        page,
+        'title',
+      ))
+        ? await page.$eval('title', (element) => element.innerText)
+        : '-';
+
+      return pageTitle;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   /**
    * Returns the Scrape Page Data by Given URL
    *
@@ -173,13 +198,16 @@ export class ScrappingService {
                 element.target !== '_blank' &&
                 !element.href.includes('mailto:'),
             )
-            .map((element) => ({
-              uuid: generateId,
-              target: element.target,
-              href: element.href,
-              innerText: element.innerText,
-              contents: '-',
-            })),
+            .map(async (element) => {
+              const contents = await this.scrapeSinglePage(page, element.href);
+              return {
+                uuid: generateId,
+                target: element.target,
+                href: element.href,
+                innerText: element.innerText,
+                contents,
+              };
+            }),
         this.generateId,
       );
 
@@ -193,7 +221,7 @@ export class ScrappingService {
           },
           innerPageLinks: {
             count: innerPageLinks.length,
-            pages: innerPageLinks,
+            pages: await Promise.all(innerPageLinks),
           },
         },
       };
