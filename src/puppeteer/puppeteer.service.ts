@@ -118,6 +118,33 @@ export class PuppeteerService {
   generateUniqueIdV4 = () => uuidv4();
 
   /**
+   * Get Page Meta Description
+   *
+   * @async
+   * @param {puppeteer.Page} page
+   * @returns {Promise<string>}
+   */
+  getPageMetaDescription = async (page: puppeteer.Page): Promise<string> => {
+    return (await this.checkElementExists(page, 'meta[name="description"]'))
+      ? await page.$eval(
+          'meta[name="description"]',
+          (element) => element.content,
+        )
+      : '-';
+  };
+
+  /**
+   * Get Page Body
+   *
+   * @async
+   * @param {puppeteer.Page} page
+   * @returns {unknown}
+   */
+  getPageBody = async (page: puppeteer.Page) => {
+    return page.$eval('body', (element) => element.innerHTML);
+  };
+
+  /**
    * Close the Browser
    *
    * @async

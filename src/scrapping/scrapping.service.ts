@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as Puppeteer from 'puppeteer';
 import { PuppeteerService } from 'src/puppeteer/puppeteer.service';
+import { InnerPage, Link } from './model';
 
 /**
  * Scrapping Service
@@ -71,15 +72,10 @@ export class ScrappingService {
           })),
         this.generateId,
       );
-      pageDescription = (await this.puppeteerService.checkElementExists(
+
+      pageDescription = await this.puppeteerService.getPageMetaDescription(
         page,
-        'meta[name="description"]',
-      ))
-        ? await page.$eval(
-            'meta[name="description"]',
-            (element) => element.content,
-          )
-        : '-';
+      );
 
       await this.puppeteerService.closeBrowser();
 
@@ -132,7 +128,18 @@ export class ScrappingService {
     }
   };
 
-  scrapeSinglePage = async (page: Puppeteer.Page, url: string) => {
+  /**
+   * Scrape Single Page Information
+   *
+   * @async
+   * @param {Puppeteer.Page} page
+   * @param {string} url
+   * @returns {Promise<InnerPage>}
+   */
+  scrapeSinglePage = async (
+    page: Puppeteer.Page,
+    url: string,
+  ): Promise<InnerPage> => {
     try {
       // Navigate Page
       await this.puppeteerService.navigatePage(page, url);
@@ -150,7 +157,17 @@ export class ScrappingService {
         ? await page.$eval('title', (element) => element.innerText)
         : '-';
 
-      return pageTitle;
+      const pageMetaDescription =
+        await this.puppeteerService.getPageMetaDescription(page);
+
+      // TODO: Need to Format Information
+      // const pageBodyContents = await this.puppeteerService.getPageBody(page);
+
+      return {
+        pageTitle,
+        pageMetaDescription,
+        // pageBodyContents
+      };
     } catch (error) {
       throw error;
     }
@@ -188,7 +205,7 @@ export class ScrappingService {
         elements.map((element) => element),
       );
 
-      const innerPageLinks = await page.$$eval(
+      const innerPageLinks: Link[] = await page.$$eval(
         'a',
         (elements, generateId) =>
           elements
@@ -198,18 +215,21 @@ export class ScrappingService {
                 element.target !== '_blank' &&
                 !element.href.includes('mailto:'),
             )
-            .map(async (element) => {
-              const contents = await this.scrapeSinglePage(page, element.href);
+            .map((element) => {
               return {
                 uuid: generateId,
                 target: element.target,
                 href: element.href,
                 innerText: element.innerText,
-                contents,
               };
             }),
         this.generateId,
       );
+
+      for (const link of innerPageLinks) {
+        const innerPageContents = await this.scrapeSinglePage(page, link.href);
+        link.contents = innerPageContents;
+      }
 
       await this.puppeteerService.closeBrowser();
 
