@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
+import chromium from 'chrome-aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { Dimensions } from './model';
 
@@ -21,7 +22,14 @@ export class PuppeteerService {
    * @returns {Promise<puppeteer.Browser>}
    */
   launchBrowser = async () => {
-    this.browser = await puppeteer.launch({ headless: 'new' });
+    const executablePath =
+      process.env.IS_LOCAL === 'true' ? '' : await chromium.executablePath;
+
+    this.browser = await puppeteer.launch({
+      executablePath,
+      args: process.env.IS_LOCAL === 'true' ? [] : chromium.args,
+      headless: process.env.IS_LOCAL === 'true' ? 'new' : chromium.headless,
+    });
     return this.browser;
   };
 
